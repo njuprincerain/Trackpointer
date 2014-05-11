@@ -44,11 +44,7 @@ public class ColorBlobDetectionActivity extends Activity implements
 
 	private CameraBridgeViewBase mOpenCvCameraView;
 	private EditText editText;
-	private boolean cover = false;
-	private double leftBase = 0;
-	private double rightBase = 0;
-	private double upBase = 0;
-	private double downBase = 0;
+	private final double baseTotalBrgt = 28000;
 
 	private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
 		@Override
@@ -184,7 +180,7 @@ public class ColorBlobDetectionActivity extends Activity implements
 		if (mIsColorSelected) {
 			mDetector.process(mRgba);
 			List<MatOfPoint> contours = mDetector.getContours();
-			Log.e(TAG, "Contours count: " + contours.size());
+			// Log.e(TAG, "Contours count: " + contours.size());
 			Imgproc.drawContours(mRgba, contours, -1, CONTOUR_COLOR);
 
 			Mat colorLabel = mRgba.submat(4, 68, 4, 68);
@@ -202,77 +198,98 @@ public class ColorBlobDetectionActivity extends Activity implements
 		int rDiv2 = row * 2 / 3;
 		int colDiv1 = col / 3;
 		int colDiv2 = col * 2 / 3;
+		int cnt = 0;
+		int leftCnt = 0;
+		int rightCnt = 0;
+		int upCnt = 0;
+		int downCnt = 0;
 		double totalBrgt = 0;
 		double upBrgt = 0;
 		double leftBrgt = 0;
 		double rightBrgt = 0;
 		double downBrgt = 0;
 		ArrayList<Double> brgtList = new ArrayList<Double>();
-		for (int i = 0; i < row; i++) {
-			for (int j = 0; j < col; j++) {
+		for (int i = 0; i < col; i++) {
+			for (int j = 0; j < row; j++) {
 				double[] dimensions = smMat.get(i, j);
-				if (dimensions != null) {
-					double brgt = dimensions[0];
-					totalBrgt += brgt;
-					brgtList.add(brgt);
-					// up
-					if (i <= rDiv1 && j >= colDiv1 && j <= colDiv2) {
-						upBrgt += brgt;
-					}
-					// down
-					if (i >= rDiv2 && j >= colDiv1 && j <= colDiv2) {
-						downBrgt += brgt;
-					}
-					// left
-					if (j <= colDiv1 && i >= rDiv1 && i <= rDiv2) {
-						leftBrgt += brgt;
-					}
-					// right
-					if (j >= colDiv2 && i >= rDiv1 && i <= rDiv2) {
-						rightBrgt += brgt;
-					}
+				double brgt = dimensions[0];
+				cnt++;
+				totalBrgt += brgt;
+				brgtList.add(brgt);
+				// up
+				if (i <= rDiv1 && j >= colDiv1 && j <= colDiv2) {
+					upBrgt += brgt;
+					upCnt++;
+				}
+				// down
+				else if (i >= rDiv2 && j >= colDiv1 && j <= colDiv2) {
+					downBrgt += brgt;
+					downCnt++;
+				}
+				// left
+				else if (j <= colDiv1 && i >= rDiv1 && i <= rDiv2) {
+					leftBrgt += brgt;
+					leftCnt++;
+				}
+				// right
+				else if (j >= colDiv2 && i >= rDiv1 && i <= rDiv2) {
+					rightBrgt += brgt;
+					rightCnt++;
 				}
 			}
 		}
+		totalBrgt = totalBrgt / cnt;
+		upBrgt = upBrgt / upCnt;
+		downBrgt = downBrgt / downCnt;
+		rightBrgt = rightBrgt / rightCnt;
+		leftBrgt = leftBrgt / leftCnt;
+		// Log.e(TAG, String.format("%f %f %f %f", upBrgt, downBrgt, leftBrgt, rightBrgt));
+		// Log.e(TAG, "UP: (" + upBrgt + ", " + upCnt + ")");
+		// Log.e(TAG, "DOWN: (" + downBrgt + ", " + downCnt + ")");
+		// Log.e(TAG, "RIGHT: (" + rightBrgt + ", " + rightCnt + ")");
+		// Log.e(TAG, "LEFT: (" + leftBrgt + ", " + leftCnt + ")");
+		// Log.e(TAG, "totalBrgt : " + totalBrgt);
 		double std = std(brgtList);
-		if (std < 350){
-			if (!cover){
-				cover = true;
-				upBase = upBrgt / totalBrgt;
-				downBase = downBrgt / totalBrgt;
-				leftBase = leftBrgt / totalBrgt;
-				rightBase = rightBrgt / totalBrgt;
-			}
-			double verticalDiff = 1000 * ((upBrgt / totalBrgt - upBase) - (downBrgt / totalBrgt - downBase));
-			double horizontalDiff = 1000 * ((leftBrgt / totalBrgt - leftBase) - (rightBrgt / totalBrgt- rightBase));
+		if (std < 4000) {
+			double verticalDiff = (upBrgt - downBrgt);
+			double horizontalDiff = (leftBrgt - rightBrgt);
 			Log.e(TAG, "Diff (" + horizontalDiff + ", " + verticalDiff + ")");
-			Log.e(TAG, "std: " + std);
-		    // setCursor(horizontalDiff, verticalDiff);
-		}
-		else{
-			cover = false;
+			// Log.e(TAG, "std: " + std);
+			setCursor(horizontalDiff, verticalDiff, totalBrgt);
 		}
 		return mRgba;
 	}
-	
-	private void setCursor(final double horiDiff, final double vertiDiff){
+
+	private void setCursor(final double horiDiff, final double vertiDiff,
+			final double totalBrgt) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				if (horiDiff > 14){
-					Selection.moveRight(editText.getText(), editText.getLayout());
+				if (horiDiff > 20) {
+					Selection.moveRight(editText.getText(),
+							editText.getLayout());
+					// Log.e(TAG, "Right");
 				}
-				if (horiDiff < -13){
-					Selection.moveLeft(editText.getText(), editText.getLayout());
+				if (horiDiff < -15) {
+					Selection
+							.moveLeft(editText.getText(), editText.getLayout());
+					// Log.e(TAG, "Left");
 				}
-				if (vertiDiff > 18){
-					Selection.moveDown(editText.getText(), editText.getLayout());
+				if (vertiDiff > 25) {
+					Selection
+							.moveDown(editText.getText(), editText.getLayout());
+					// Log.e(TAG, "Down");
 				}
-				if (vertiDiff < 0){
+				if (vertiDiff < -20) {
 					Selection.moveUp(editText.getText(), editText.getLayout());
+					// Log.e(TAG, "Up");
 				}
 			}
 		});
+	}
+
+	private double getAdjustThreshold(double origin, double curBrgt) {
+		return origin * Math.sqrt(baseTotalBrgt / curBrgt);
 	}
 
 	private Mat getSmallerMat(Mat m) {
@@ -292,20 +309,20 @@ public class ColorBlobDetectionActivity extends Activity implements
 
 		return new Scalar(pointMatRgba.get(0, 0));
 	}
-	
-	private double std(ArrayList<Double> list){
+
+	private double std(ArrayList<Double> list) {
 		double average = avg(list);
 		int sum = 0;
-		for (int i = 0; i < list.size(); i++){
+		for (int i = 0; i < list.size(); i++) {
 			double curDiff = list.get(i) - average;
 			sum += curDiff * curDiff;
 		}
 		return Math.sqrt(sum);
 	}
-	
-	private double avg(ArrayList<Double> list){
+
+	private double avg(ArrayList<Double> list) {
 		double sum = 0;
-		for (int i = 0; i < list.size(); i++){
+		for (int i = 0; i < list.size(); i++) {
 			sum += list.get(i);
 		}
 		return sum / list.size();
