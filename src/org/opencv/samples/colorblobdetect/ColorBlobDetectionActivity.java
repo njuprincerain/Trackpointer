@@ -44,7 +44,6 @@ public class ColorBlobDetectionActivity extends Activity implements
 
 	private CameraBridgeViewBase mOpenCvCameraView;
 	private EditText editText;
-	private final double baseTotalBrgt = 28000;
 
 	private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
 		@Override
@@ -287,11 +286,7 @@ public class ColorBlobDetectionActivity extends Activity implements
 			}
 		});
 	}
-
-	private double getAdjustThreshold(double origin, double curBrgt) {
-		return origin * Math.sqrt(baseTotalBrgt / curBrgt);
-	}
-
+	
 	private Mat getSmallerMat(Mat m) {
 		int row = m.width();
 		int col = m.height();
