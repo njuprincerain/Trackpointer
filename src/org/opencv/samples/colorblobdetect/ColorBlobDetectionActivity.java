@@ -44,6 +44,11 @@ public class ColorBlobDetectionActivity extends Activity implements
 
 	private CameraBridgeViewBase mOpenCvCameraView;
 	private EditText editText;
+	private boolean cover = false;
+	private double leftBase = 0;
+	private double rightBase = 0;
+	private double upBase = 0;
+	private double downBase = 0;
 
 	private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
 		@Override
@@ -229,14 +234,23 @@ public class ColorBlobDetectionActivity extends Activity implements
 				}
 			}
 		}
-		double verticalDiff = 100 * (upBrgt - downBrgt) / totalBrgt;
-		double horizontalDiff = 100 * (leftBrgt - rightBrgt) / totalBrgt;
-		// Log.e(TAG, "Total" + totalBrgt);
 		double std = std(brgtList);
-		// Log.e(TAG, "std " + std);
-		if (std < 5000){
-		    Log.e(TAG, "Diff (" + horizontalDiff + ", " + verticalDiff + ")");
-		    setCursor(horizontalDiff, verticalDiff);
+		if (std < 350){
+			if (!cover){
+				cover = true;
+				upBase = upBrgt / totalBrgt;
+				downBase = downBrgt / totalBrgt;
+				leftBase = leftBrgt / totalBrgt;
+				rightBase = rightBrgt / totalBrgt;
+			}
+			double verticalDiff = 1000 * ((upBrgt / totalBrgt - upBase) - (downBrgt / totalBrgt - downBase));
+			double horizontalDiff = 1000 * ((leftBrgt / totalBrgt - leftBase) - (rightBrgt / totalBrgt- rightBase));
+			Log.e(TAG, "Diff (" + horizontalDiff + ", " + verticalDiff + ")");
+			Log.e(TAG, "std: " + std);
+		    // setCursor(horizontalDiff, verticalDiff);
+		}
+		else{
+			cover = false;
 		}
 		return mRgba;
 	}
