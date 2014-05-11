@@ -254,6 +254,12 @@ public class ColorBlobDetectionActivity extends Activity implements
 			double horizontalDiff = (leftBrgt - rightBrgt);
 			Log.e(TAG, "Diff (" + horizontalDiff + ", " + verticalDiff + ")");
 			// Log.e(TAG, "std: " + std);
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			setCursor(horizontalDiff, verticalDiff, totalBrgt);
 		}
 		return mRgba;
