@@ -208,9 +208,9 @@ public class ColorBlobDetectionActivity extends Activity implements
 		double rightBrgt = 0;
 		double downBrgt = 0;
 		ArrayList<Double> brgtList = new ArrayList<Double>();
-		for (int i = 0; i < col; i++) {
-			for (int j = 0; j < row; j++) {
-				double[] dimensions = smMat.get(i, j);
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < col; j++) {
+				double[] dimensions = smMat.get(j, i);
 				double brgt = dimensions[0];
 				cnt++;
 				totalBrgt += brgt;
@@ -252,14 +252,16 @@ public class ColorBlobDetectionActivity extends Activity implements
 		if (std < 4000) {
 			double verticalDiff = (upBrgt - downBrgt);
 			double horizontalDiff = (leftBrgt - rightBrgt);
+			Log.e(TAG, "" + upCnt + " " + downCnt + " " + rightCnt + " " + leftCnt);
+			Log.e(TAG, "(" + upBrgt + "," + downBrgt + ")");
 			Log.e(TAG, "Diff (" + horizontalDiff + ", " + verticalDiff + ")");
 			// Log.e(TAG, "std: " + std);
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				Thread.sleep(200);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			setCursor(horizontalDiff, verticalDiff, totalBrgt);
 		}
 		return mRgba;
@@ -270,23 +272,42 @@ public class ColorBlobDetectionActivity extends Activity implements
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				if (horiDiff > 20) {
-					Selection.moveRight(editText.getText(),
+//				if (horiDiff > 15) {
+//					Selection.moveRight(editText.getText(),
+//							editText.getLayout());
+//					// Log.e(TAG, "Right");
+//				}
+//				if (horiDiff < -15) {
+//					Selection
+//							.moveLeft(editText.getText(), editText.getLayout());
+//					// Log.e(TAG, "Left");
+//				}
+//				if (vertiDiff > 15) {
+//					Selection
+//							.moveDown(editText.getText(), editText.getLayout());
+//					// Log.e(TAG, "Down");
+//				}
+//				if (vertiDiff < -15) {
+//					Selection.moveUp(editText.getText(), editText.getLayout());
+//					// Log.e(TAG, "Up");
+//				}
+				if (horiDiff > 30) {
+					Selection.moveDown(editText.getText(),
 							editText.getLayout());
 					// Log.e(TAG, "Right");
 				}
-				if (horiDiff < -15) {
+				if (horiDiff < -30) {
 					Selection
-							.moveLeft(editText.getText(), editText.getLayout());
+							.moveUp(editText.getText(), editText.getLayout());
 					// Log.e(TAG, "Left");
 				}
-				if (vertiDiff > 25) {
+				if (vertiDiff > 30) {
 					Selection
-							.moveDown(editText.getText(), editText.getLayout());
+							.moveRight(editText.getText(), editText.getLayout());
 					// Log.e(TAG, "Down");
 				}
-				if (vertiDiff < -20) {
-					Selection.moveUp(editText.getText(), editText.getLayout());
+				if (vertiDiff < -30) {
+					Selection.moveLeft(editText.getText(), editText.getLayout());
 					// Log.e(TAG, "Up");
 				}
 			}
