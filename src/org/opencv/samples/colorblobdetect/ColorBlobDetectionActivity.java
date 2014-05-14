@@ -249,11 +249,12 @@ public class ColorBlobDetectionActivity extends Activity implements
 		// Log.e(TAG, "LEFT: (" + leftBrgt + ", " + leftCnt + ")");
 		// Log.e(TAG, "totalBrgt : " + totalBrgt);
 		double std = std(brgtList);
-		if (std < 4000) {
+		// Log.e(TAG, "STD: " + std);
+		if (std < 2000) {
 			double verticalDiff = (upBrgt - downBrgt);
 			double horizontalDiff = (leftBrgt - rightBrgt);
-			Log.e(TAG, "" + upCnt + " " + downCnt + " " + rightCnt + " " + leftCnt);
-			Log.e(TAG, "(" + upBrgt + "," + downBrgt + ")");
+//			Log.e(TAG, "" + upCnt + " " + downCnt + " " + rightCnt + " " + leftCnt);
+//			Log.e(TAG, "(" + upBrgt + "," + downBrgt + ")");
 			Log.e(TAG, "Diff (" + horizontalDiff + ", " + verticalDiff + ")");
 			// Log.e(TAG, "std: " + std);
 //			try {
